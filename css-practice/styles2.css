@@ -1,0 +1,17 @@
+p {
+	color: red;
+	font-size: xxx-large;
+	background-color: indigo;
+	border: solid;
+	border-width: thick;
+}
+.box {
+	margin: 190px;
+	width: 100px;
+	height: 100px;
+	background-color: rebeccapurple;
+	transform: scale(0.5,2);
+	transform: rotate(0.1turn);
+	transform: skew(10deg, 20deg);
+	
+}
