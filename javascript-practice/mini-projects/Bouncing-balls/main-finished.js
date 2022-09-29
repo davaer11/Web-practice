@@ -6,6 +6,9 @@ const ctx = canvas.getContext('2d');
 const width = canvas.width = window.innerWidth;
 const height = canvas.height = window.innerHeight;
 
+const score_counter = document.querySelector('p');
+score_counter.textContent = 0;
+
 // function to generate random number
 
 function random(min, max) {
@@ -18,15 +21,96 @@ function randomRGB() {
   return `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`;
 }
 
-class Ball {
+class Shape {
+	
+	constructor(x, y, velX, velY) {
+		this.x = x;
+		this.y = y;
+		this.velX = velX;
+		this.velY = velY;
+	}		
+}
+//svaki put kad evilCircle pojede naraste za pola radijusa kruga kojeg je pojeo. Evil Circle može jesti samo krugove koji su veći od njega - 1. IDEJA
+//Ako proba pojesti veći krug onda umire - 1.IDEJA
+class EvilCircle extends Shape {
+	
+	constructor(x, y) {
+		super(x,y,20,20);
+		this.color = "white";
+		this.size = 10;
+		
+		window.addEventListener('keydown', e => {
+			
+			switch(e.key) {
+				
+				case "a":
+					this.x -= this.velX;
+					break;
+				case "d":
+					this.x += this.velX;
+					break;
+				case "w":
+					this.y -= this.velY;
+					break;
+				case "s": 
+					this.y += this.velY;
+					break;
+			}
+		});
+	}
+	
+	draw() {
+		
+	  ctx.beginPath();
+      ctx.strokeStyle = this.color;
+	  ctx.lineWidth = 3;
+	  ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+      ctx.stroke();
+	}
+	
+	checkBounds() {
+		
+	  if ((this.x + this.size) >= width) {
+         this.x = -(this.size);
+      }
+
+      if ((this.x - this.size) <= 0) {
+         this.x = +(this.size);
+      }
+
+      if ((this.y + this.size) >= height) {
+         this.y = -(this.size);
+      }
+
+      if ((this.y - this.size) <= 0) {
+         this.y = +(this.size);
+      }
+   			
+	}
+	
+	collisionDetect() {
+      for (const ball of balls) {
+         if (ball.exists) {
+            const dx = this.x - ball.x;
+            const dy = this.y - ball.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < this.size + ball.size) {
+              ball.exists = false;
+			}
+         }
+      }
+   }
+}
+
+class Ball extends Shape {
 
    constructor(x, y, velX, velY, color, size) {
-      this.x = x;
-      this.y = y;
-      this.velX = velX;
-      this.velY = velY;
+	   
+	  super(x,y,velX,velY); 
       this.color = color;
       this.size = size;
+	  this.exists = true;
    }
 
    draw() {
@@ -59,7 +143,7 @@ class Ball {
 
    collisionDetect() {
       for (const ball of balls) {
-         if (!(this === ball)) {
+         if (!(this === ball) && ball.exists) {
             const dx = this.x - ball.x;
             const dy = this.y - ball.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -74,6 +158,8 @@ class Ball {
 }
 
 const balls = [];
+
+const evilCircle = new EvilCircle(40,40);
 
 while (balls.length < 25) {
    const size = random(10,20);
@@ -96,10 +182,17 @@ function loop() {
    ctx.fillRect(0, 0,  width, height);
 
    for (const ball of balls) {
-     ball.draw();
-     ball.update();
-     ball.collisionDetect();
+	 if (ball.exists) {
+		 
+		 ball.draw();
+		 ball.update();
+		 ball.collisionDetect();		
+	 }
+    
    }
+   evilCircle.draw();
+   evilCircle.checkBounds();
+   evilCircle.collisionDetect();
 
    requestAnimationFrame(loop);
 }
