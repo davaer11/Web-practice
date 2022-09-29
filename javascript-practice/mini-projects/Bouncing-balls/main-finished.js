@@ -7,7 +7,8 @@ const width = canvas.width = window.innerWidth;
 const height = canvas.height = window.innerHeight;
 
 const score_counter = document.querySelector('p');
-score_counter.textContent = 0;
+var count = 0;
+
 
 // function to generate random number
 
@@ -97,6 +98,8 @@ class EvilCircle extends Shape {
 
             if (distance < this.size + ball.size) {
               ball.exists = false;
+			  count -= 1;
+			  score_counter.textContent = `Balls: ${count}` ;
 			}
          }
       }
@@ -160,6 +163,7 @@ class Ball extends Shape {
 const balls = [];
 
 const evilCircle = new EvilCircle(40,40);
+score_counter.textContent = `Balls: ${count}` ;
 
 while (balls.length < 25) {
    const size = random(10,20);
@@ -175,6 +179,8 @@ while (balls.length < 25) {
    );
 
   balls.push(ball);
+  count += 1;
+  score_counter.textContent = `Balls: ${count}` ;
 }
 
 function loop() {
