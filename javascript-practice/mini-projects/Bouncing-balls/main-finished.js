@@ -8,7 +8,45 @@ const height = canvas.height = window.innerHeight;
 
 const score_counter = document.querySelector('p');
 var count = 0;
+const balls = [];
 
+/*document.body.addEventListener('animationend', () => {
+	
+	displayMessage("jea", "lose");
+	
+});*/
+
+function displayMessage(msgText, msgType) { // lose or win
+	
+	const body = document.body;
+	
+	const panel = document.createElement('div');
+	panel.setAttribute('class', 'msgBox');
+	body.appendChild(panel);
+	
+	const msg = document.createElement('p');
+	msg.textContent = msgText;
+	panel.appendChild(msg);
+	
+	const closeBtn = document.createElement('button');
+	closeBtn.textContent = 'x';
+	panel.appendChild(closeBtn);
+	
+	closeBtn.addEventListener('click', () => {
+		
+		panel.parentNode.removeChild(panel);
+		ctx.clearRect(0,0,width,height);
+		//Pokrenuti igru ponovno
+        ctx = canvas.getContext('2d');
+		balls = [];
+		count = 0;
+		evilCircle = new EvilCircle(40,40);
+		createBalls();
+		loop();
+		
+	});
+	
+}
 
 // function to generate random number
 
@@ -39,6 +77,7 @@ class EvilCircle extends Shape {
 		super(x,y,20,20);
 		this.color = "white";
 		this.size = 10;
+		this.game_over = false;
 		
 		window.addEventListener('keydown', e => {
 			
@@ -97,9 +136,17 @@ class EvilCircle extends Shape {
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             if (distance < this.size + ball.size) {
-              ball.exists = false;
-			  count -= 1;
-			  score_counter.textContent = `Balls: ${count}` ;
+				if (ball.size <= this.size) { //Ako je lopta koju jedem manja ili jednaka meni pojedi ju i narasti za veličinu lopta koju si pojeo.
+						ball.exists = false;
+						count -= 1;
+						score_counter.textContent = `Balls: ${count}` ;
+						this.size += ball.size / 2 ;
+						
+					}		
+				else { // Inače je igra gotova
+					this.game_over = true;
+				}
+              
 			}
          }
       }
@@ -160,29 +207,9 @@ class Ball extends Shape {
 
 }
 
-const balls = [];
-
-const evilCircle = new EvilCircle(40,40);
-score_counter.textContent = `Balls: ${count}` ;
-
-while (balls.length < 25) {
-   const size = random(10,20);
-   const ball = new Ball(
-      // ball position always drawn at least one ball width
-      // away from the edge of the canvas, to avoid drawing errors
-      random(0 + size,width - size),
-      random(0 + size,height - size),
-      random(-7,7),
-      random(-7,7),
-      randomRGB(),
-      size
-   );
-
-  balls.push(ball);
-  count += 1;
-  score_counter.textContent = `Balls: ${count}` ;
-}
-
+//IDEJA napravit dijagonalno kretanje
+//IDEJA ako su sve kuglice veće od igračevih kuglica napravit jedan pravokutnik na koji treba kliknut(stisnut neku tipku kako bi sto brze mogao pojest) da se izgenerira nova kuglica koja je sigurno manja od trenutne veličine kuglice. Kuglica će se stvorit jedino ako nijedna kuglica trenutno nije manja od kuglice igrača.
+//IDEJA - napravit dva igrača i svaki od igrača jede kuglice i cilj je svakom igraču pojest barem 4 kuglice nakon kojih bilo kad može pojest svog protivnika. onaj koji to prvi uspije je pobjednik.
 function loop() {
    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
    ctx.fillRect(0, 0,  width, height);
@@ -199,8 +226,48 @@ function loop() {
    evilCircle.draw();
    evilCircle.checkBounds();
    evilCircle.collisionDetect();
-
-   requestAnimationFrame(loop);
+   
+   my_requestID = window.requestAnimationFrame(loop);
+   
+   if (evilCircle.game_over) {
+	  
+	  stopAnimation(my_requestID);
+	  displayMessage("Nažalost igra je gotova za vas!\n Ako želite ponovno igrati stisnite x", "lose");
+	  
+   }
+   
+   
 }
+function stopAnimation(my_requestID) {
+	window.cancelAnimationFrame(my_requestID);
+	
+}
+
+function createBalls() {
+	
+	while (balls.length < 17) {
+		const size = random(10,40); //10 do 20
+		const ball = new Ball(
+			// ball position always drawn at least one ball width
+			// away from the edge of the canvas, to avoid drawing errors
+			random(0 + size,width - size),
+			random(0 + size,height - size),
+			random(-5,5),
+			random(-5,5),
+			randomRGB(),
+			size
+		);
+
+		balls.push(ball);
+		count += 1;
+		score_counter.textContent = `Balls: ${count}` ;
+	}
+	
+}
+
+
+const evilCircle = new EvilCircle(40,40);
+score_counter.textContent = `Balls: ${count}`;
+createBalls();
 
 loop();
