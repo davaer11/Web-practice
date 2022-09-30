@@ -36,14 +36,14 @@ p {
     top: 50%;
     left: 50%;
     transform: translate(-50%,-50%);
-    width: 242px;
+    width: 300px;
     background: #eee;
 }
+
 .msgBox p {
     line-height: 1.5;
     padding: 10px 20px;
-    color: #333;
-    padding-left: 82px;
+    color: "black";
     background-position: 25px center;
 	background-repeat: no-repeat;
 }

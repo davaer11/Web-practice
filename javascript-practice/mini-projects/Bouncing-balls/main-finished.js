@@ -1,14 +1,14 @@
 // set up canvas
 
 const canvas = document.querySelector('canvas');
-const ctx = canvas.getContext('2d');
+var ctx = canvas.getContext('2d');
 
 const width = canvas.width = window.innerWidth;
 const height = canvas.height = window.innerHeight;
 
 const score_counter = document.querySelector('p');
 var count = 0;
-const balls = [];
+var balls = [];
 
 /*document.body.addEventListener('animationend', () => {
 	
@@ -35,9 +35,11 @@ function displayMessage(msgText, msgType) { // lose or win
 	closeBtn.addEventListener('click', () => {
 		
 		panel.parentNode.removeChild(panel);
+		
+		//Start game again
 		ctx.clearRect(0,0,width,height);
-		//Pokrenuti igru ponovno
         ctx = canvas.getContext('2d');
+		
 		balls = [];
 		count = 0;
 		evilCircle = new EvilCircle(40,40);
@@ -60,6 +62,7 @@ function randomRGB() {
   return `rgb(${random(0, 255)},${random(0, 255)},${random(0, 255)})`;
 }
 
+
 class Shape {
 	
 	constructor(x, y, velX, velY) {
@@ -71,6 +74,29 @@ class Shape {
 }
 //svaki put kad evilCircle pojede naraste za pola radijusa kruga kojeg je pojeo. Evil Circle može jesti samo krugove koji su veći od njega - 1. IDEJA
 //Ako proba pojesti veći krug onda umire - 1.IDEJA
+
+class Rectangle extends Shape {
+	
+	constructor(x,y) {
+		super(x,y,0,0);
+		this.width = 120;
+		this.height = 80;
+		this.color = "blue";
+		this.clicked = false;
+		
+	}
+	
+	draw() {
+		
+	  ctx.beginPath();
+      ctx.fillStyle = this.color;
+	  ctx.fillRect(this.x, this.y, this.width, this.height);
+	  
+	}
+	
+	
+}
+
 class EvilCircle extends Shape {
 	
 	constructor(x, y) {
@@ -223,6 +249,8 @@ function loop() {
 	 }
     
    }
+   rectangle.draw();
+   
    evilCircle.draw();
    evilCircle.checkBounds();
    evilCircle.collisionDetect();
@@ -232,7 +260,7 @@ function loop() {
    if (evilCircle.game_over) {
 	  
 	  stopAnimation(my_requestID);
-	  displayMessage("Nažalost igra je gotova za vas!\n Ako želite ponovno igrati stisnite x", "lose");
+	  displayMessage("Nažalost igra je gotova za vas!\n Ako želite ponovno igrati stisnite x.", "lose");
 	  
    }
    
@@ -266,7 +294,8 @@ function createBalls() {
 }
 
 
-const evilCircle = new EvilCircle(40,40);
+var evilCircle = new EvilCircle(40,40);
+var rectangle = new Rectangle(30, 600);
 score_counter.textContent = `Balls: ${count}`;
 createBalls();
 
