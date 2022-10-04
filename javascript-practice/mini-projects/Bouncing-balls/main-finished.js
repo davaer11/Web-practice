@@ -16,6 +16,7 @@ var balls = [];
 	
 });*/
 
+
 function displayMessage(msgText, msgType) { // lose or win
 	
 	const body = document.body;
@@ -24,13 +25,61 @@ function displayMessage(msgText, msgType) { // lose or win
 	panel.setAttribute('class', 'msgBox');
 	body.appendChild(panel);
 	
+	const panel_header = document.createElement('div');
+	panel_header.setAttribute('class', 'panel-header');
+	panel.appendChild(panel_header)
+	
 	const msg = document.createElement('p');
 	msg.textContent = msgText;
 	panel.appendChild(msg);
 	
+	const buttons = document.createElement('div');
+	buttons.setAttribute('class', 'btns');
+	panel_header.appendChild(buttons);
+	
+	const fullScreenBtn = document.createElement('button');
+	fullScreenBtn.setAttribute('class', 'fullscreen-btn');
+	fullScreenBtn.textContent = '[]';
+	buttons.appendChild(fullScreenBtn);
+	
 	const closeBtn = document.createElement('button');
+	closeBtn.setAttribute('class', 'close-btn');
 	closeBtn.textContent = 'x';
-	panel.appendChild(closeBtn);
+	buttons.appendChild(closeBtn);
+	
+	/*fullScreenBtn.addEventListener('click', (e) => {
+		
+		if (!e.target.classList.contains('resize')) {
+			
+			msg.classList.add('resize');
+		}
+		else {
+			panel.classList.remove('resize');
+		}
+		
+		
+	});*/
+	
+	
+	/*fullScreenBtn.addEventListener('click', (e) => {
+		
+		if(!document.fullscreenElement) {
+			
+			e.target.requestFullscreen().catch((err) => {
+				
+				alert(`Error attempting to enable fullscreen mode: ${err.message} (${err.name})`);
+				
+			});
+			
+		}
+		else {
+			document.exitFullscreen();
+		}
+		
+		
+	});*/
+	
+	
 	
 	closeBtn.addEventListener('click', () => {
 		
@@ -42,7 +91,8 @@ function displayMessage(msgText, msgType) { // lose or win
 		
 		balls = [];
 		count = 0;
-		evilCircle = new EvilCircle(40,40);
+		var player1 = new EvilCircle(40,40, "player1", 1);
+		//var player2 = new EvilCircle(700,40, "player2", 2);
 		createBalls();
 		loop();
 		
@@ -72,40 +122,26 @@ class Shape {
 		this.velY = velY;
 	}		
 }
-//svaki put kad evilCircle pojede naraste za pola radijusa kruga kojeg je pojeo. Evil Circle može jesti samo krugove koji su veći od njega - 1. IDEJA
-//Ako proba pojesti veći krug onda umire - 1.IDEJA
-
-class Rectangle extends Shape {
-	
-	constructor(x,y) {
-		super(x,y,0,0);
-		this.width = 120;
-		this.height = 80;
-		this.color = "blue";
-		this.clicked = false;
-		
-	}
-	
-	draw() {
-		
-	  ctx.beginPath();
-      ctx.fillStyle = this.color;
-	  ctx.fillRect(this.x, this.y, this.width, this.height);
-	  
-	}
-	
-	
-}
 
 class EvilCircle extends Shape {
 	
-	constructor(x, y) {
+	constructor(x, y, name, which_one = 0) {
 		super(x,y,20,20);
 		this.color = "white";
 		this.size = 10;
 		this.game_over = false;
+		this.name = name;
+		this.which_one = which_one;
 		
-		window.addEventListener('keydown', e => {
+		this.update();
+		
+	}
+	
+	
+	update() {
+		if (this.which_one === 1 || this.which_one === 0) {
+			
+			window.addEventListener('keydown', e => {
 			
 			switch(e.key) {
 				
@@ -122,8 +158,32 @@ class EvilCircle extends Shape {
 					this.y += this.velY;
 					break;
 			}
-		});
+			});
+		}
+		else if (this.which_one == 2){
+			
+			window.addEventListener('keydown', e => {
+				
+			switch(e.code) {
+					
+				case "ArrowLeft":
+					this.x -= this.velX;
+					break;
+				case "ArrowRight":
+					this.x += this.velX;
+					break;
+				case "ArrowUp":
+					this.y -= this.velY;
+					break;
+				case "ArrowDown":
+					this.y += this.velY;
+					break;
+				}
+				
+			});
+		}
 	}
+	
 	
 	draw() {
 		
@@ -233,8 +293,8 @@ class Ball extends Shape {
 
 }
 
-//IDEJA napravit dijagonalno kretanje
-//IDEJA ako su sve kuglice veće od igračevih kuglica napravit jedan pravokutnik na koji treba kliknut(stisnut neku tipku kako bi sto brze mogao pojest) da se izgenerira nova kuglica koja je sigurno manja od trenutne veličine kuglice. Kuglica će se stvorit jedino ako nijedna kuglica trenutno nije manja od kuglice igrača.
+//IDEJA napravit dijagonalno kretanje -za sada po strani
+//IDEJA napravit izbor igranja - ili jedan igrač(prelazi po levelima) ili dva igrača jedan protiv drugoga
 //IDEJA - napravit dva igrača i svaki od igrača jede kuglice i cilj je svakom igraču pojest barem 4 kuglice nakon kojih bilo kad može pojest svog protivnika. onaj koji to prvi uspije je pobjednik.
 function loop() {
    ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
@@ -249,15 +309,21 @@ function loop() {
 	 }
     
    }
-   rectangle.draw();
    
-   evilCircle.draw();
-   evilCircle.checkBounds();
-   evilCircle.collisionDetect();
+   
+   player1.draw();
+   player1.checkBounds();
+   player1.collisionDetect();
+   
+  /* player2.draw();
+   player2.checkBounds();
+   player2.collisionDetect();*/
+   
+   
    
    my_requestID = window.requestAnimationFrame(loop);
-   
-   if (evilCircle.game_over) {
+   //IDEJA: Ako igraju 2 playera jedan protiv drugoga onda je dozvoljeno jedenje većih krugova(ili nikom ništa), ali oni te smanjuju. Krajnji ishod igre je pobjeda jednog od igrača
+   if (player1.game_over /*|| player2.game_over*/) {
 	  
 	  stopAnimation(my_requestID);
 	  displayMessage("Nažalost igra je gotova za vas!\n Ako želite ponovno igrati stisnite x.", "lose");
@@ -274,14 +340,14 @@ function stopAnimation(my_requestID) {
 function createBalls() {
 	
 	while (balls.length < 17) {
-		const size = random(10,40); //10 do 20
+		const size = random(5,20); //10 do 20
 		const ball = new Ball(
 			// ball position always drawn at least one ball width
 			// away from the edge of the canvas, to avoid drawing errors
 			random(0 + size,width - size),
 			random(0 + size,height - size),
-			random(-5,5),
-			random(-5,5),
+			random(-2,2),
+			random(-2,2),
 			randomRGB(),
 			size
 		);
@@ -293,10 +359,8 @@ function createBalls() {
 	
 }
 
-
-var evilCircle = new EvilCircle(40,40);
-var rectangle = new Rectangle(30, 600);
+var player1 = new EvilCircle(40,40, "player1", 1);
+//var player2 = new EvilCircle(700,40, "player2", 2);
 score_counter.textContent = `Balls: ${count}`;
 createBalls();
-
 loop();
